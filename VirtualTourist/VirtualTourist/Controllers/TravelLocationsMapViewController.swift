@@ -34,6 +34,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
     
     @objc func mapTap(gesture: UILongPressGestureRecognizer) {
         if gesture.state == .ended {
+            
             let location = gesture.location(in: mapView)
             let coordinate = mapView.convert(location, toCoordinateFrom: mapView)
             
@@ -43,6 +44,38 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
             
         }
     }
+    
+    // MARK: - MapView View For Annotation
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+         
+        let reuseId = "pin"
+        
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId) as? MKPinAnnotationView
+
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            pinView!.canShowCallout = true
+            pinView!.pinTintColor = .red
+            
+        }
+        else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
+    }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        
+        
+        let photoAlbumViewController = self.storyboard?.instantiateViewController(identifier: "PhotoAlbumViewController") as! PhotoAlbumViewController
+        
+        photoAlbumViewController.latitude =  Float((view.annotation?.coordinate.latitude)!)
+        photoAlbumViewController.longitude = Float((view.annotation?.coordinate.longitude)!)
+        
+        self.navigationController?.pushViewController(photoAlbumViewController, animated: true)
+    }
+        
     
     
 }
