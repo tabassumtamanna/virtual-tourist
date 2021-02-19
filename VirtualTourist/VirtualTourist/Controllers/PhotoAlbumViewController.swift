@@ -21,8 +21,11 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate{
         super.viewDidLoad()
         self.mapView.delegate = self
         
+        print("lat: \(latitude), long: \(longitude)")
         //show the location annotation on the map
         showMapAnnotation()
+        
+        getFlickrPhotos()
     }
     
 
@@ -52,6 +55,17 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate{
         let regionRadius: CLLocationDistance = 3000
         let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: regionRadius * 2.0, longitudinalMeters: regionRadius * 2.0)
         self.mapView.setRegion(region, animated: true)
+    }
+    
+    
+    func getFlickrPhotos(){
+        FlickrClient.getPhotos(lat: self.latitude, long: self.longitude, completion: handleFlickrResponse(flickrPhoto:error:))
+    }
+    
+    func handleFlickrResponse(flickrPhoto: [FlickrPhoto], error: Error?){
+        if error == nil {
+            print(flickrPhoto)
+        }
     }
     
     

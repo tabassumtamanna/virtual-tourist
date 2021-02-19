@@ -65,6 +65,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
         return pinView
     }
     
+    // MARK: - MapView View Did Select
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
         
@@ -77,6 +78,9 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
     }
         
     
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        
+    }
     
 }
 

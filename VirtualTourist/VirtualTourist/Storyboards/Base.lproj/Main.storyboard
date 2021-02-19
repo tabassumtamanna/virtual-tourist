@@ -27,7 +27,7 @@
                                         </constraints>
                                     </mapView>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="7cd-aH-dYz">
-                                        <rect key="frame" x="0.0" y="200" width="414" height="618"/>
+                                        <rect key="frame" x="0.0" y="200" width="414" height="558"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="7Ea-PL-W84">
                                             <size key="itemSize" width="128" height="128"/>
@@ -46,14 +46,22 @@
                                             </collectionViewCell>
                                         </cells>
                                     </collectionView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vyZ-8E-RLt">
+                                        <rect key="frame" x="0.0" y="758" width="414" height="60"/>
+                                        <state key="normal" title="New Collection"/>
+                                    </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="AeM-Jm-aEE" firstAttribute="top" secondItem="Qfd-TV-8xx" secondAttribute="top" id="02H-sZ-2F1"/>
+                                    <constraint firstItem="vyZ-8E-RLt" firstAttribute="leading" secondItem="Qfd-TV-8xx" secondAttribute="leading" id="0Iq-7E-1Ib"/>
                                     <constraint firstAttribute="trailing" secondItem="AeM-Jm-aEE" secondAttribute="trailing" id="By9-jh-HKr"/>
+                                    <constraint firstAttribute="bottom" secondItem="vyZ-8E-RLt" secondAttribute="bottom" id="J0h-1K-kcv"/>
+                                    <constraint firstAttribute="trailing" secondItem="vyZ-8E-RLt" secondAttribute="trailing" id="OT2-U4-cLw"/>
                                     <constraint firstAttribute="trailing" secondItem="7cd-aH-dYz" secondAttribute="trailing" id="PYI-qt-gNM"/>
-                                    <constraint firstAttribute="bottom" secondItem="7cd-aH-dYz" secondAttribute="bottom" id="YC4-JZ-g0z"/>
+                                    <constraint firstAttribute="bottom" secondItem="7cd-aH-dYz" secondAttribute="bottom" constant="60" id="YC4-JZ-g0z"/>
                                     <constraint firstItem="AeM-Jm-aEE" firstAttribute="leading" secondItem="Qfd-TV-8xx" secondAttribute="leading" id="dEG-Gs-WVz"/>
                                     <constraint firstItem="7cd-aH-dYz" firstAttribute="leading" secondItem="Qfd-TV-8xx" secondAttribute="leading" id="hUR-Cd-xZX"/>
+                                    <constraint firstItem="vyZ-8E-RLt" firstAttribute="top" secondItem="7cd-aH-dYz" secondAttribute="bottom" id="sjv-JR-Phl"/>
                                 </constraints>
                             </stackView>
                         </subviews>
