@@ -74,6 +74,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
         photoAlbumViewController.latitude =  Float((view.annotation?.coordinate.latitude)!)
         photoAlbumViewController.longitude = Float((view.annotation?.coordinate.longitude)!)
         
+        mapView.deselectAnnotation(view.annotation, animated:true)
         self.navigationController?.pushViewController(photoAlbumViewController, animated: true)
     }
         

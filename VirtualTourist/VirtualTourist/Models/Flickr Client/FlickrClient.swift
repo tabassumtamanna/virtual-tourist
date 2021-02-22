@@ -14,13 +14,18 @@ class FlickrClient{
     enum Endpoints{
         
         case getPhotos(Float, Float)
+        case downloadImages(Int, String,  String, String)
         
         var stringValue: String{
             switch self {
             case .getPhotos(let lat, let long):
-                return "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(apiKey)&lat=\(lat)&lon=\(long)&per_page=30&format=json&nojsoncallback=1"
+                return "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(apiKey)&lat=\(lat)&lon=\(long)&per_page=20&page=1&format=json&nojsoncallback=1"
+                
+            case .downloadImages(let farmId, let serverId, let id, let secret):
+                return "https://farm\(farmId).staticflickr.com/\(serverId)/\(id)_\(secret).jpg"
             }
         }
+        
         
         var url: URL{
             return URL(string: stringValue)!
@@ -74,6 +79,24 @@ class FlickrClient{
                 completion([], error)
             }
         }
+    }
+    
+    class func downloadImages(farmId: Int,  serverId: String, id: String, secret: String, completion: @escaping (Data?, Error?) -> Void){
+        
+        let task = URLSession.shared.dataTask(with: Endpoints.downloadImages(farmId, serverId, id, secret).url) { data, response, error in
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    completion(nil, error)
+                }
+                return
+            }
+            DispatchQueue.main.async {
+                print(data)
+                completion(data, nil)
+            
+            }
+        }
+        task.resume()
     }
 }
 
