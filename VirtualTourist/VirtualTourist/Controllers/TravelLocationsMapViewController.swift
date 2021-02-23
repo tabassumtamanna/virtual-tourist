@@ -35,9 +35,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
         
         
         let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
-        if let result = try? dataController.viewContext.fetch(fetchRequest){
-            pins = result
-            //reload the pin here
+        if let pins = try? dataController.viewContext.fetch(fetchRequest){
+            showMapAnnotations(pins)
         }
         
     }
@@ -49,17 +48,36 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
             let location = gesture.location(in: mapView)
             let coordinate = mapView.convert(location, toCoordinateFrom: mapView)
             
+            //add pin to map
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
             mapView.addAnnotation(annotation)
             
+            //save pin
             let pin = Pin(context: dataController.viewContext)
             pin.latitude = coordinate.latitude
             pin.longitude = coordinate.longitude
             
             try? dataController.viewContext.save()
             
+            
         }
+    }
+    
+    func showMapAnnotations(_ pins: [Pin]){
+        
+        var annotations = [MKPointAnnotation]()
+        
+        for pin in pins {
+            
+            let coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
+            
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            annotations.append(annotation)
+        }
+        
+        self.mapView.addAnnotations(annotations)
     }
     
     // MARK: - MapView View For Annotation

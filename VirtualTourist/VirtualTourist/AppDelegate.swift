@@ -7,7 +7,7 @@
 
 import UIKit
 
-@main
+@UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
@@ -18,12 +18,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         
-        dataController.load()
+        //dataController.load()
         
-        let navigationController = window?.rootViewController as! UINavigationController
-        let travelLocationMapViewController = navigationController.topViewController as! TravelLocationsMapViewController
+       /* let navigationViewController = window?.rootViewController as! UINavigationController
+        let travelLocationMapViewController = navigationViewController.topViewController as! TravelLocationsMapViewController
         travelLocationMapViewController.dataController = dataController
-        
+        */
         return true
     }
     
