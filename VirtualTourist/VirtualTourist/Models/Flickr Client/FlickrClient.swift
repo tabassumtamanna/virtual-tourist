@@ -84,16 +84,9 @@ class FlickrClient{
     class func downloadImages(farmId: Int,  serverId: String, id: String, secret: String, completion: @escaping (Data?, Error?) -> Void){
         
         let task = URLSession.shared.dataTask(with: Endpoints.downloadImages(farmId, serverId, id, secret).url) { data, response, error in
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    completion(nil, error)
-                }
-                return
-            }
+        
             DispatchQueue.main.async {
-                print(data)
-                completion(data, nil)
-            
+                completion(data, error)
             }
         }
         task.resume()

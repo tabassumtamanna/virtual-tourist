@@ -7,12 +7,16 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 // MARK : - Travel Locations Map View Controller
 class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
 
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
+    
+    var dataController: DataController!
+    var pins: [Pin] = []
     
     // MARK: - View Will Appear
     override func viewWillAppear(_ animated: Bool) {
@@ -29,6 +33,13 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
         
         mapView.delegate = self
         
+        
+        let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+        if let result = try? dataController.viewContext.fetch(fetchRequest){
+            pins = result
+            //reload the pin here
+        }
+        
     }
 
     
@@ -41,6 +52,12 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate {
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
             mapView.addAnnotation(annotation)
+            
+            let pin = Pin(context: dataController.viewContext)
+            pin.latitude = coordinate.latitude
+            pin.longitude = coordinate.longitude
+            
+            try? dataController.viewContext.save()
             
         }
     }
