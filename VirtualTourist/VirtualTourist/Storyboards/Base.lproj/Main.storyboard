@@ -121,7 +121,7 @@
             </objects>
             <point key="canvasLocation" x="-894" y="54"/>
         </scene>
-        <!--Travel Locations Map View Controller-->
+        <!--Virtual Tourist-->
         <scene sceneID="hT4-uY-Uw3">
             <objects>
                 <viewController id="FkX-Kd-Cxg" customClass="TravelLocationsMapViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
@@ -140,7 +140,7 @@
                         <viewLayoutGuide key="safeArea" id="kFm-VX-ecf"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
-                    <navigationItem key="navigationItem" id="k1Z-JH-WmB"/>
+                    <navigationItem key="navigationItem" title="Virtual Tourist" id="k1Z-JH-WmB"/>
                     <connections>
                         <outlet property="mapView" destination="ls9-wN-jRM" id="8JQ-QQ-V2A"/>
                     </connections>

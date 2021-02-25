@@ -8,8 +8,9 @@
 import Foundation
 import UIKit
 import MapKit
+import CoreData
 
-class PhotoAlbumViewController:   UIViewController {
+class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDelegate {
 
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
@@ -18,9 +19,11 @@ class PhotoAlbumViewController:   UIViewController {
     
     
     // MARK: - variables
-    var latitude: Float = 0.0
-    var longitude: Float = 0.0
-    var photoArray: [UIImage] = []
+    var pin: Pin!
+    var dataController: DataController!
+    var fetchedResultsController: NSFetchedResultsController<Photo>!
+    
+    var photos: [Photo] = []
     var flickrPhoto: [FlickrPhoto] = []
     
     let sectionInsets = UIEdgeInsets(top: 5.0,
@@ -37,22 +40,46 @@ class PhotoAlbumViewController:   UIViewController {
         self.collectionView.delegate = self
         self.collectionView.dataSource = self
         
-        print("lat: \(latitude), long: \(longitude)")
         //show the location annotation on the map
         showMapAnnotation()
         
-        getFlickrPhotos()
+       setupFetchedResultsController()
         
-        /*
-        let space:CGFloat = 3.0
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        collectionView.reloadData()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        fetchedResultsController = nil
+    }
+    
+    
+    fileprivate func setupFetchedResultsController() {
+        let fetchRequest:NSFetchRequest<Photo> = Photo.fetchRequest()
         
-        let dimension = (view.frame.size.width - (2 * space)) / 3.0
-
-        flowLayout.minimumInteritemSpacing = space
-        flowLayout.minimumLineSpacing = space
-        flowLayout.itemSize = CGSize(width: dimension, height: dimension)
-        print(flowLayout.itemSize)
- */
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.predicate = predicate
+        fetchRequest.sortDescriptors = []
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+        
+        print("Count: \(fetchedResultsController.fetchedObjects!.count)")
+        
+        if (fetchedResultsController.fetchedObjects!.count == 0) {
+            getFlickrPhotos()
+        }
     }
     
     
@@ -61,10 +88,9 @@ class PhotoAlbumViewController:   UIViewController {
     func showMapAnnotation(){
         
         //set the latitude and longitude
-        let lat = CLLocationDegrees(self.latitude)
-        let long = CLLocationDegrees(self.longitude)
+        let lat = CLLocationDegrees(pin.latitude)
+        let long = CLLocationDegrees(pin.longitude)
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
-        
         
         let annotation = MKPointAnnotation()
         annotation.coordinate = coordinate
@@ -81,36 +107,30 @@ class PhotoAlbumViewController:   UIViewController {
     func centerMapOnLocation(_ coordinate: CLLocationCoordinate2D) {
         
         self.mapView.setCenter(coordinate, animated: true)
-        let regionRadius: CLLocationDistance = 1000
+        let regionRadius: CLLocationDistance = 5000
         let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: regionRadius * 2.0, longitudinalMeters: regionRadius * 2.0)
         self.mapView.setRegion(region, animated: true)
     }
     
     
     func getFlickrPhotos(){
-        FlickrClient.getPhotos(lat: self.latitude, long: self.longitude, completion: handleFlickrResponse(flickrPhoto:error:))
+        FlickrClient.getPhotos(lat: pin.latitude, long: pin.longitude, completion: handleFlickrResponse(flickrPhoto:error:))
     }
     
     func handleFlickrResponse(flickrPhoto: [FlickrPhoto], error: Error?){
-        if error == nil {
-            
+        if error != nil {
+            print(error?.localizedDescription ?? "")
+        } else {
+            print("flickrPhoto: \(flickrPhoto)")
             self.flickrPhoto = flickrPhoto
-            /*
-            for photo in flickrPhoto {
-                FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
-                    
-                    guard let data = data else {
-                        return
-                    }
-                    DispatchQueue.main.async {
-                        let image = UIImage(data: data)
-                        self.photoArray.append(image!)
-                    }
-                }
+            
+            if flickrPhoto.count == 0 {
                 
+                print("No photo")
+                return
             }
-            collectionView.reloadData()
-            */
+            self.collectionView.reloadData()
+            self.collectionView.reloadInputViews()
             
         }
     }
@@ -146,13 +166,18 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
 
 extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
+    // MARK: - Number Of Sections In CollectionView
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return 1
+        return  1
     }
     
     // MARK: - Collection View  Number Of Items In Section
      func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 15
+        if fetchedResultsController.fetchedObjects!.count > 0 {
+                return fetchedResultsController.fetchedObjects!.count
+        } else {
+            return flickrPhoto.count
+        }
     }
     
     // MARK: - Collection View Cell For Item At
@@ -160,26 +185,40 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewPhotoCell", for: indexPath) as! CollectionViewPhotoCell
         
-        //let image = photoArray[indexPath.row]
         cell.imageView?.image = UIImage(named: "VirtualTourist_1024")
-        
-        /*
-        cell.activityIndicator.startAnimating()
-        let photo = flickrPhoto[indexPath.row]
-        
-        FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
+       
+        if fetchedResultsController.fetchedObjects!.count > 0 {
             
-            guard let data = data else {
-                return
+            let photo =  fetchedResultsController.object(at: indexPath)
+            if let image = photo.image {
+                cell.imageView?.image = UIImage(data: image)
             }
-            DispatchQueue.main.async {
-                cell.activityIndicator.stopAnimating()
-                let image = UIImage(data: data)
-                cell.imageView?.image = image
+        
+        } else {
+            
+            cell.activityIndicator.startAnimating()
+            let photo = flickrPhoto[indexPath.row]
+            
+            FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
+                
+                guard let data = data else {
+                    return
+                }
+                DispatchQueue.main.async {
+                    cell.activityIndicator.stopAnimating()
+                    let image = UIImage(data: data)
+                    cell.imageView?.image = image
+                    
+                    //save photo/image
+                    let photoObj = Photo(context: self.dataController.viewContext)
+                    photoObj.image = data
+                    photoObj.pin = self.pin
+                    try? self.dataController.viewContext.save()
+                    
+                }
             }
         }
         
-        */
         return cell
     }
     
@@ -223,3 +262,4 @@ extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
     
 
 }
+

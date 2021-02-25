@@ -13,7 +13,7 @@ class FlickrClient{
     
     enum Endpoints{
         
-        case getPhotos(Float, Float)
+        case getPhotos(Double, Double)
         case downloadImages(Int, String,  String, String)
         
         var stringValue: String{
@@ -66,7 +66,7 @@ class FlickrClient{
         return task
     }
     
-    class func getPhotos(lat: Float, long: Float, completion: @escaping ([FlickrPhoto], Error?) -> Void){
+    class func getPhotos(lat: Double, long: Double, completion: @escaping ([FlickrPhoto], Error?) -> Void){
         
         
         taskForGETRequest(url: Endpoints.getPhotos(lat, long).url, responseType: FlickrPhotosResponse.self) { (response, error) in
