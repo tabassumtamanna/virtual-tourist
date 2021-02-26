@@ -15,8 +15,10 @@ class TravelLocationsMapViewController: UIViewController {
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
     
+    // MARK: - Variables
+    var centerPosition = CLLocationCoordinate2D()
+    var zoomLevel = MKCoordinateSpan()
     var dataController: DataController!
-    
     var fetchedResultsController: NSFetchedResultsController<Pin>!
     
     // MARK: - View Did Load
@@ -36,12 +38,16 @@ class TravelLocationsMapViewController: UIViewController {
         let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(mapTap(gesture:)))
         
         mapView.addGestureRecognizer(longPressGestureRecognizer)
+        
+        setMapSetting()
     }
     
     // MARK: - View Did Disappear
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         //fetchedResultsController = nil
+        
+        saveMapSetting()
     }
     
     // MARK: - Setup Fetch Results Controller
@@ -106,6 +112,34 @@ class TravelLocationsMapViewController: UIViewController {
         self.mapView.addAnnotations(annotations)
     }
     
+    // MARK: - Set Map Setting
+    func setMapSetting() {
+        print("setMapSetting")
+        if UserDefaults.standard.object(forKey: "centerLatitude") != nil {
+            
+            let centerLatitude =  UserDefaults.standard.double(forKey: "centerLatitude")
+            let centerLongitude =  UserDefaults.standard.double(forKey: "centerLongitude")
+            let zoomLatitudeDelta =  UserDefaults.standard.double(forKey: "zoomLatitudeDelta")
+            let zoomLongitudeDelta =  UserDefaults.standard.double(forKey: "zoomLongitudeDelta")
+            
+            let center = CLLocationCoordinate2D(latitude: centerLatitude, longitude: centerLongitude)
+            let zoom = MKCoordinateSpan(latitudeDelta: zoomLatitudeDelta, longitudeDelta: zoomLongitudeDelta)
+        
+            
+            mapView.setRegion(MKCoordinateRegion(center: center, span: zoom), animated: true)
+        }
+    }
+    
+    // MARK: - Save Map Setting
+    func saveMapSetting() {
+        print("saveMapSetting")
+        UserDefaults.standard.set(centerPosition.latitude, forKey: "centerLatitude")
+        UserDefaults.standard.set(centerPosition.longitude, forKey: "centerLongitude")
+        UserDefaults.standard.set(zoomLevel.latitudeDelta, forKey: "zoomLatitudeDelta")
+        UserDefaults.standard.set(zoomLevel.longitudeDelta, forKey: "zoomLongitudeDelta")
+        UserDefaults.standard.synchronize()
+    }
+    
 }
 
 // MARK: - Extention Map View Delegate
@@ -158,6 +192,8 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
         
     // MARK: - MapView Region Did Change Animated
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        centerPosition  = mapView.centerCoordinate
+        zoomLevel       = mapView.region.span
         
     }
 }
