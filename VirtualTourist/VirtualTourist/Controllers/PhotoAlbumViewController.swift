@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDelegate {
+class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDelegate{
 
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
@@ -73,11 +73,14 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
             dataController.viewContext.delete(photo)
         }
         try? dataController.viewContext.save()
+        
+        self.isPhotoAvailable = false
+        
         getFlickrPhotos()
+        //setupFetchedResultsController()
     }
-    
-    
-    
+
+   
     // MARK: - Setup Fetched Results Controller
     fileprivate func setupFetchedResultsController() {
         let fetchRequest:NSFetchRequest<Photo> = Photo.fetchRequest()
@@ -150,7 +153,7 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
                 addNoImageLabel()
                 return
             }
-            print("handleFlickrResponse: \(fetchedResultsController.fetchedObjects!.count)")
+            print("handleFlickrResponse: \(self.flickrPhoto.count)")
             
             self.collectionView.reloadData()
             self.collectionView.reloadInputViews()
@@ -181,11 +184,12 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
             try? dataController.viewContext.save()
         } else {
             print("Nothing to delete!!")
+            flickrPhoto.remove(at: indexPath.row)
+            
         }
-        
     }
     
-    
+   
     
 }
 
@@ -224,6 +228,8 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
     
     // MARK: - Collection View  Number Of Items In Section
      func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        
+        print("numberOfItemsInSection: \(isPhotoAvailable)")
         if isPhotoAvailable {
             return fetchedResultsController.fetchedObjects!.count
         } else {
@@ -284,6 +290,22 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
     }
     
 }
+/*
+extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate{
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        
+        switch type {
+        case .insert:
+            collectionView.insertItems(at: [newIndexPath!])
+        case .delete:
+            collectionView.deleteItems(at: [indexPath!])
+        default:
+            break
+        }
+    }
+}
+*/
 
 extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
     
