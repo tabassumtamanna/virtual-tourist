@@ -43,15 +43,19 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="192" height="192"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="RVE-kO-PAs">
-                                                            <rect key="frame" x="73" y="57" width="37" height="37"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="RVE-kO-PAs">
+                                                            <rect key="frame" x="77.5" y="77.5" width="37" height="37"/>
+                                                            <color key="color" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </activityIndicatorView>
                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="VirtualTourist_1024" translatesAutoresizingMaskIntoConstraints="NO" id="ukt-ma-A1a">
                                                             <rect key="frame" x="6" y="8" width="180" height="176"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                     </subviews>
+                                                    <constraints>
+                                                        <constraint firstItem="RVE-kO-PAs" firstAttribute="centerX" secondItem="VqJ-Iv-mYd" secondAttribute="centerX" id="TRk-Id-P3b"/>
+                                                        <constraint firstItem="RVE-kO-PAs" firstAttribute="centerY" secondItem="VqJ-Iv-mYd" secondAttribute="centerY" id="bti-80-HbQ"/>
+                                                    </constraints>
                                                 </collectionViewCellContentView>
                                                 <size key="customSize" width="192" height="192"/>
                                                 <connections>
@@ -68,6 +72,9 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vyZ-8E-RLt">
                                         <rect key="frame" x="0.0" y="758" width="414" height="60"/>
                                         <state key="normal" title="New Collection"/>
+                                        <connections>
+                                            <action selector="newCollectionButtonTappedWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Ix2-mM-LLZ"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <constraints>
@@ -99,6 +106,7 @@
                         <outlet property="collectionView" destination="7cd-aH-dYz" id="1bz-S0-SrF"/>
                         <outlet property="flowLayout" destination="7Ea-PL-W84" id="KDY-T7-dPm"/>
                         <outlet property="mapView" destination="AeM-Jm-aEE" id="Z1z-GP-WeH"/>
+                        <outlet property="newCollectionButton" destination="vyZ-8E-RLt" id="cC4-ZM-Pcs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

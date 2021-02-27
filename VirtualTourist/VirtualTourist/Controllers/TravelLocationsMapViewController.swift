@@ -39,7 +39,7 @@ class TravelLocationsMapViewController: UIViewController {
         
         mapView.addGestureRecognizer(longPressGestureRecognizer)
         
-        setMapSetting()
+        //setMapSetting()
     }
     
     // MARK: - View Did Disappear
@@ -114,7 +114,7 @@ class TravelLocationsMapViewController: UIViewController {
     
     // MARK: - Set Map Setting
     func setMapSetting() {
-        print("setMapSetting")
+        
         if UserDefaults.standard.object(forKey: "centerLatitude") != nil {
             
             let centerLatitude =  UserDefaults.standard.double(forKey: "centerLatitude")
@@ -132,7 +132,7 @@ class TravelLocationsMapViewController: UIViewController {
     
     // MARK: - Save Map Setting
     func saveMapSetting() {
-        print("saveMapSetting")
+        
         UserDefaults.standard.set(centerPosition.latitude, forKey: "centerLatitude")
         UserDefaults.standard.set(centerPosition.longitude, forKey: "centerLongitude")
         UserDefaults.standard.set(zoomLevel.latitudeDelta, forKey: "zoomLatitudeDelta")
