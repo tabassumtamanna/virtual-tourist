@@ -23,14 +23,11 @@ class PhotoAlbumViewController:   UIViewController{
     var pin: Pin!
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
-    
-    
+    var frameSize: CGSize = CGSize(width: 300.0, height: 300.0)
     let sectionInsets = UIEdgeInsets(top: 5.0,
         left: 5.0,
         bottom: 50.0,
         right: 5.0)
-    
-    var frameSize: CGSize = CGSize(width: 300.0, height: 300.0)
     
     // MARK: - View Did Load
     override func viewDidLoad() {
@@ -55,7 +52,6 @@ class PhotoAlbumViewController:   UIViewController{
         if fetchedResultsController.fetchedObjects!.count == 0 {
             getFlickrPhotos()
         }
-        
     }
     
     // MARK: - View Did Disappear
@@ -91,7 +87,6 @@ class PhotoAlbumViewController:   UIViewController{
         
     }
     
-    
     // MARK: - Center Map On Location
     func centerMapOnLocation(_ coordinate: CLLocationCoordinate2D) {
         
@@ -115,7 +110,6 @@ class PhotoAlbumViewController:   UIViewController{
                 addNoImageLabel()
                 return
             }
-            
             for photo in flickrPhoto {
                 FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
                 
@@ -193,7 +187,7 @@ class PhotoAlbumViewController:   UIViewController{
     
 }
 
-
+// MARK: - Extension : MKMapViewDelegate
 extension PhotoAlbumViewController: MKMapViewDelegate {
     
     
@@ -218,7 +212,7 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
     
 }
 
-
+// MARK: - Extension : UICollectionViewDelegate, UICollectionViewDataSource
 extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     // MARK: - Number Of Sections In CollectionView
@@ -236,10 +230,12 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewPhotoCell", for: indexPath) as! CollectionViewPhotoCell
         
+        cell.activityIndicator.startAnimating()
         let photo =  fetchedResultsController.object(at: indexPath)
         if let image = photo.image {
             cell.imageView?.image = UIImage(data: image)
         }
+        cell.activityIndicator.stopAnimating()
         return cell
     }
   
@@ -253,6 +249,7 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
     
 }
 
+// MARK: - Extension: NSFetchedResultsControllerDelegate
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
     // MARK: - Setup Fetched Results Controller
@@ -278,6 +275,7 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
         }
     }
     
+    // MARK: - Controller NSFetchedResultsController Did Change
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
@@ -296,37 +294,41 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     }
 }
 
-
+// MARK: - Extension: UICollectionViewDelegateFlowLayout
 extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
-    
+
+    // MARK: - Collection View Layout sizeForItemAt
     func collectionView(_ collectionView: UICollectionView,
-                          layout collectionViewLayout: UICollectionViewLayout,
-                          sizeForItemAt indexPath: IndexPath) -> CGSize {
+                      layout collectionViewLayout: UICollectionViewLayout,
+                      sizeForItemAt indexPath: IndexPath) -> CGSize {
         let itemsPerRow: CGFloat = 3
         let paddingSpace = sectionInsets.left * itemsPerRow
         let availableWidth = UIScreen.main.bounds.width - paddingSpace
         let widthPerItem = availableWidth / itemsPerRow
-        
+
         frameSize = CGSize(width: widthPerItem, height: widthPerItem)
-        
+
         return frameSize
-      }
+    }
       
-      func collectionView(_ collectionView: UICollectionView,
-                          layout collectionViewLayout: UICollectionViewLayout,
-                          insetForSectionAt section: Int) -> UIEdgeInsets {
+    // MARK: - collectionViewLayout insetForSectionAt
+    func collectionView(_ collectionView: UICollectionView,
+                  layout collectionViewLayout: UICollectionViewLayout,
+                  insetForSectionAt section: Int) -> UIEdgeInsets {
         return sectionInsets
-      }
-        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-            
-            return 0
-        }
-      
-      func collectionView(_ collectionView: UICollectionView,
-                          layout collectionViewLayout: UICollectionViewLayout,
-                          minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    }
+    
+    // MARK: - collectionViewLayout minimumInteritemSpacingForSectionAt
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0
-      }
+    }
+
+    // MARK: - collectionViewLayout minimumLineSpacingForSectionAt
+    func collectionView(_ collectionView: UICollectionView,
+                      layout collectionViewLayout: UICollectionViewLayout,
+                      minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
     
 
 }
