@@ -19,7 +19,7 @@ class FlickrClient{
         var stringValue: String{
             switch self {
             case .getPhotos(let lat, let long, let page):
-                return "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(apiKey)&lat=\(lat)&lon=\(long)&page=\(page)&per_page=10&format=json&nojsoncallback=1"
+                return "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=\(apiKey)&lat=\(lat)&lon=\(long)&page=\(page)&per_page=15&format=json&nojsoncallback=1"
                 
             case .downloadImages(let farmId, let serverId, let id, let secret):
                 return "https://farm\(farmId).staticflickr.com/\(serverId)/\(id)_\(secret).jpg"
@@ -69,7 +69,7 @@ class FlickrClient{
     class func getPhotos(lat: Double, long: Double, completion: @escaping ([FlickrPhoto], Error?) -> Void){
         
         let page = Int.random(in: 1..<10)
-        print(Endpoints.getPhotos(lat, long, page).url)
+        
         taskForGETRequest(url: Endpoints.getPhotos(lat, long, page).url, responseType: FlickrPhotosResponse.self) { (response, error) in
             
             if let response = response {

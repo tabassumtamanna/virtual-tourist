@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDelegate{
+class PhotoAlbumViewController:   UIViewController{
 
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
@@ -23,8 +23,7 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
     var pin: Pin!
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
-    var flickrPhoto: [FlickrPhoto] = []
-    var isPhotoAvailable: Bool = false
+    
     
     let sectionInsets = UIEdgeInsets(top: 5.0,
         left: 5.0,
@@ -43,19 +42,20 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
         
         //show the location annotation on the map
         showMapAnnotation()
+        //set the new collection button disable
         setupNewCollectionButton(false)
-        setupFetchedResultsController()
         
-        print("isPhotoAvailable: \(isPhotoAvailable)")
-        if !isPhotoAvailable {
-            getFlickrPhotos()
-        }
     }
     
     // MARK: - View Will Appear
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        collectionView.reloadData()
+        
+        setupFetchedResultsController()
+        if fetchedResultsController.fetchedObjects!.count == 0 {
+            getFlickrPhotos()
+        }
+        
     }
     
     // MARK: - View Did Disappear
@@ -67,47 +67,11 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
     
     // MARK: - New Collection Button Tapped
     @IBAction func newCollectionButtonTapped(sender: Any) {
-        //print("newCollectionButtonTapped")
-        print("newCollectionButtonTapped: \(fetchedResultsController.fetchedObjects!.count)")
-        for photo in fetchedResultsController.fetchedObjects! {
-            dataController.viewContext.delete(photo)
-        }
-        try? dataController.viewContext.save()
         
-        self.isPhotoAvailable = false
-        
-        getFlickrPhotos()
-        //setupFetchedResultsController()
-    }
-
-   
-    // MARK: - Setup Fetched Results Controller
-    fileprivate func setupFetchedResultsController() {
-        let fetchRequest:NSFetchRequest<Photo> = Photo.fetchRequest()
-        
-        let predicate = NSPredicate(format: "pin == %@", pin)
-        fetchRequest.predicate = predicate
-        fetchRequest.sortDescriptors = []
-        
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-        
-        fetchedResultsController.delegate = self
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            fatalError("The fetch could not be performed: \(error.localizedDescription)")
-        }
-        
-        if (fetchedResultsController.fetchedObjects!.count > 0) {
-            isPhotoAvailable = true
-        }
-        print("setupFetchedResultsController: \(fetchedResultsController.fetchedObjects!.count)")
-        //print("object: \(fetchedResultsController.fetchedObjects!)")
-        
+        self.deleteAllPhotos()
+        self.getFlickrPhotos()
     }
     
-
     // MARK: - Show Map Annotation
     func showMapAnnotation(){
         
@@ -126,6 +90,7 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
         centerMapOnLocation(coordinate)
         
     }
+    
     
     // MARK: - Center Map On Location
     func centerMapOnLocation(_ coordinate: CLLocationCoordinate2D) {
@@ -146,18 +111,22 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
         if error != nil {
             print(error?.localizedDescription ?? "")
         } else {
-            
-            self.flickrPhoto = flickrPhoto
-            
             if flickrPhoto.count == 0 {
                 addNoImageLabel()
                 return
             }
-            print("handleFlickrResponse: \(self.flickrPhoto.count)")
             
-            self.collectionView.reloadData()
-            self.collectionView.reloadInputViews()
-            
+            for photo in flickrPhoto {
+                FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
+                
+                    guard let data = data else {
+                        return
+                    }
+                    self.addPhoto(data: data)
+                    
+                }
+            }
+            setupNewCollectionButton(true)
         }
     }
     
@@ -175,21 +144,52 @@ class PhotoAlbumViewController:   UIViewController, NSFetchedResultsControllerDe
         self.newCollectionButton.isEnabled = isEnable
     }
     
-    // MARK: - Delete Photo
-    func deletePhoto(at indexPath: IndexPath) {
-        if isPhotoAvailable {
-            let photoToDelete = fetchedResultsController.object(at: indexPath)
-           
-            dataController.viewContext.delete(photoToDelete)
-            try? dataController.viewContext.save()
-        } else {
-            print("Nothing to delete!!")
-            flickrPhoto.remove(at: indexPath.row)
-            
+    
+    // MARK: - Add Photos
+    func addPhoto(data: Data) {
+        
+        let photoObj = Photo(context: self.dataController.viewContext)
+        photoObj.image = data
+        photoObj.pin = self.pin
+        do {
+            try dataController.viewContext.save()
+        } catch {
+            print(error.localizedDescription)
         }
     }
     
+    // MARK: - Delete Photo
+    func deletePhoto(at indexPath: IndexPath) {
+       
+        let photoToDelete = fetchedResultsController.object(at: indexPath)
+       
+        dataController.viewContext.delete(photoToDelete)
+        
+        do {
+            try dataController.viewContext.save()
+        } catch {
+            print(error.localizedDescription)
+        }
+    
+        
+    }
    
+    // MARK: - Delete All Photos
+    func deleteAllPhotos () {
+        if let photos = self.fetchedResultsController.fetchedObjects {
+            
+            for photo in photos.reversed() {
+                self.dataController.viewContext.delete(photo)
+                
+                do {
+                    try self.dataController.viewContext.save()
+                } catch {
+                    print(error.localizedDescription)
+                }
+            }
+        }
+        
+    }
     
 }
 
@@ -223,18 +223,12 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
     
     // MARK: - Number Of Sections In CollectionView
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
-        return  1
+        return  fetchedResultsController.sections?.count ?? 1
     }
     
     // MARK: - Collection View  Number Of Items In Section
      func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
-        print("numberOfItemsInSection: \(isPhotoAvailable)")
-        if isPhotoAvailable {
-            return fetchedResultsController.fetchedObjects!.count
-        } else {
-            return flickrPhoto.count
-        }
+        return fetchedResultsController.sections?[0].numberOfObjects ?? 0
     }
     
     // MARK: - Collection View Cell For Item At
@@ -242,70 +236,66 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewPhotoCell", for: indexPath) as! CollectionViewPhotoCell
         
-        if isPhotoAvailable {
-            
-            let photo =  fetchedResultsController.object(at: indexPath)
-            if let image = photo.image {
-                cell.imageView?.image = UIImage(data: image)
-            }
-        
-        } else {
-            
-            cell.activityIndicator.startAnimating()
-            let photo = flickrPhoto[indexPath.row]
-            
-            FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
-                
-                guard let data = data else {
-                    return
-                }
-                DispatchQueue.main.async {
-                    
-                    let image = UIImage(data: data)
-                    cell.imageView?.image = image
-                    
-                    //save photo/image
-                    let photoObj = Photo(context: self.dataController.viewContext)
-                    photoObj.image = data
-                    photoObj.pin = self.pin
-                    try? self.dataController.viewContext.save()
-                    
-                }
-                cell.activityIndicator.stopAnimating()
-            }
-           
+        let photo =  fetchedResultsController.object(at: indexPath)
+        if let image = photo.image {
+            cell.imageView?.image = UIImage(data: image)
         }
-        setupNewCollectionButton(true)
         return cell
     }
-    
+  
     //MARK: - Collection View Did Selected Item At
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath:IndexPath) {
-        print("indexPath: \(indexPath)")
-        collectionView.deleteItems(at: [indexPath])
+        
         deletePhoto(at: indexPath)
         collectionView.reloadData()
-        
-        print("count \(fetchedResultsController.fetchedObjects!.count)")
+       
     }
     
 }
-/*
-extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate{
+
+extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
+    
+    // MARK: - Setup Fetched Results Controller
+    fileprivate func setupFetchedResultsController() {
+        let fetchRequest:NSFetchRequest<Photo> = Photo.fetchRequest()
+        
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.predicate = predicate
+        fetchRequest.sortDescriptors = []
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+        
+        if (fetchedResultsController.fetchedObjects!.count > 0) {
+            self.setupNewCollectionButton(true)
+        }
+    }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
         case .insert:
+           
             collectionView.insertItems(at: [newIndexPath!])
+            break
         case .delete:
+           
             collectionView.deleteItems(at: [indexPath!])
+            break
+        
         default:
             break
         }
     }
 }
-*/
+
 
 extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
     
