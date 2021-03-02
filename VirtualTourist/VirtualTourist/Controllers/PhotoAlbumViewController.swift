@@ -126,11 +126,12 @@ class PhotoAlbumViewController:   UIViewController{
     
     // MARK: - Add No Image Label
     func addNoImageLabel() {
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 50))
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 100))
         label.center = self.view.center
         label.textAlignment = .center
         label.text = "No Images!"
-    
+        label.font = UIFont.boldSystemFont(ofSize: 30.0)
+        label.textColor = .darkGray
         self.view.addSubview(label)
     }
     
