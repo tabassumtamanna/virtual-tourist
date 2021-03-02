@@ -17,7 +17,7 @@ class PhotoAlbumViewController:   UIViewController{
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     @IBOutlet weak var newCollectionButton: UIButton!
-    
+   
     
     // MARK: - variables
     var pin: Pin!
@@ -109,6 +109,7 @@ class PhotoAlbumViewController:   UIViewController{
                 addNoImageLabel()
                 return
             }
+            
             for photo in flickrPhoto {
                 FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
                 
