@@ -23,7 +23,6 @@ class PhotoAlbumViewController:   UIViewController{
     var pin: Pin!
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
-    var frameSize: CGSize = CGSize(width: 300.0, height: 300.0)
     let sectionInsets = UIEdgeInsets(top: 5.0,
         left: 5.0,
         bottom: 50.0,
@@ -38,9 +37,9 @@ class PhotoAlbumViewController:   UIViewController{
         self.collectionView.dataSource = self
         
         //show the location annotation on the map
-        showMapAnnotation()
+        self.showMapAnnotation()
         //set the new collection button disable
-        setupNewCollectionButton(false)
+        self.setupNewCollectionButton(false)
         
     }
     
@@ -48,16 +47,16 @@ class PhotoAlbumViewController:   UIViewController{
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        setupFetchedResultsController()
+        self.setupFetchedResultsController()
         if fetchedResultsController.fetchedObjects!.count == 0 {
-            getFlickrPhotos()
+            self.getFlickrPhotos()
         }
     }
     
     // MARK: - View Did Disappear
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        fetchedResultsController = nil
+        self.fetchedResultsController = nil
     }
     
     
@@ -83,7 +82,7 @@ class PhotoAlbumViewController:   UIViewController{
         self.mapView.selectAnnotation(annotation, animated: true)
         
         //zooms the map into the location region
-        centerMapOnLocation(coordinate)
+        self.centerMapOnLocation(coordinate)
         
     }
     
@@ -120,16 +119,17 @@ class PhotoAlbumViewController:   UIViewController{
                     
                 }
             }
-            setupNewCollectionButton(true)
+            self.setupNewCollectionButton(true)
         }
     }
     
     // MARK: - Add No Image Label
     func addNoImageLabel() {
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 21))
-        label.center = CGPoint(x: 175, y: 385)
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 50))
+        label.center = self.view.center
         label.textAlignment = .center
         label.text = "No Images!"
+    
         self.view.addSubview(label)
     }
     
@@ -230,11 +230,15 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewPhotoCell", for: indexPath) as! CollectionViewPhotoCell
         
+       
         cell.activityIndicator.startAnimating()
-        let photo =  fetchedResultsController.object(at: indexPath)
+       
+        let photo =  self.fetchedResultsController.object(at: indexPath)
+        
         if let image = photo.image {
             cell.imageView?.image = UIImage(data: image)
         }
+        
         cell.activityIndicator.stopAnimating()
         return cell
     }
@@ -301,14 +305,14 @@ extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                       layout collectionViewLayout: UICollectionViewLayout,
                       sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
         let itemsPerRow: CGFloat = 3
         let paddingSpace = sectionInsets.left * itemsPerRow
         let availableWidth = UIScreen.main.bounds.width - paddingSpace
         let widthPerItem = availableWidth / itemsPerRow
 
-        frameSize = CGSize(width: widthPerItem, height: widthPerItem)
-
-        return frameSize
+        return CGSize(width: widthPerItem, height: widthPerItem)
+        
     }
       
     // MARK: - collectionViewLayout insetForSectionAt

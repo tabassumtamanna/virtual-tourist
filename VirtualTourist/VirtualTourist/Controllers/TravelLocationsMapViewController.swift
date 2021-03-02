@@ -39,7 +39,7 @@ class TravelLocationsMapViewController: UIViewController {
         
         mapView.addGestureRecognizer(longPressGestureRecognizer)
         
-        //setMapSetting()
+        setMapSetting()
     }
     
     // MARK: - View Did Disappear

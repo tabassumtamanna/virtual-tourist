@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 
+// MARK: - Data Controller
 class DataController {
     let persistentContainer: NSPersistentContainer
     
@@ -15,10 +16,12 @@ class DataController {
         return persistentContainer.viewContext
     }
     
+    // MARK: - init
     init(modelName: String) {
         persistentContainer = NSPersistentContainer(name: modelName)
     }
     
+    // MARK: - Load
     func load (completion: (() -> Void )? = nil) {
         
         persistentContainer.loadPersistentStores{ storeDescription, error in
