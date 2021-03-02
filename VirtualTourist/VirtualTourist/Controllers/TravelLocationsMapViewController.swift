@@ -10,7 +10,7 @@ import MapKit
 import CoreData
 
 // MARK : - Travel Locations Map View Controller
-class TravelLocationsMapViewController: UIViewController {
+class TravelLocationsMapViewController: UIViewController, NSFetchedResultsControllerDelegate {
 
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
@@ -89,7 +89,11 @@ class TravelLocationsMapViewController: UIViewController {
         pin.latitude  = latitude
         pin.longitude = longitude
         
-        try? dataController.viewContext.save()
+        do {
+            try dataController.viewContext.save()
+        } catch {
+            print(error.localizedDescription)
+        }
         
         setupFetchResultsController()
     }
@@ -198,7 +202,3 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
     }
 }
 
-// MARK: - Extention Fetch Results Controller Delegate
-extension TravelLocationsMapViewController: NSFetchedResultsControllerDelegate {
-    
-}
