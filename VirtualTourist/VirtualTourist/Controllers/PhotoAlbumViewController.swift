@@ -15,7 +15,6 @@ class PhotoAlbumViewController:   UIViewController{
     // MARK: - Outlet
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     @IBOutlet weak var newCollectionButton: UIButton!
    
     
