@@ -104,7 +104,6 @@
                     <navigationItem key="navigationItem" id="CqL-FG-cJD"/>
                     <connections>
                         <outlet property="collectionView" destination="7cd-aH-dYz" id="1bz-S0-SrF"/>
-                        <outlet property="flowLayout" destination="7Ea-PL-W84" id="KDY-T7-dPm"/>
                         <outlet property="mapView" destination="AeM-Jm-aEE" id="Z1z-GP-WeH"/>
                         <outlet property="newCollectionButton" destination="vyZ-8E-RLt" id="cC4-ZM-Pcs"/>
                     </connections>
