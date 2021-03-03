@@ -69,11 +69,12 @@ class FlickrClient{
     // MARK: -  Get Photos
     class func getPhotos(lat: Double, long: Double, completion: @escaping ([FlickrPhoto], Error?) -> Void){
         
-        let page = Int.random(in: 1..<10)
+        let page = Int.random(in: 1..<100)
         
         taskForGETRequest(url: Endpoints.getPhotos(lat, long, page).url, responseType: FlickrPhotosResponse.self) { (response, error) in
             
             if let response = response {
+            
                 completion(response.photos.photo, nil)
             } else {
                 

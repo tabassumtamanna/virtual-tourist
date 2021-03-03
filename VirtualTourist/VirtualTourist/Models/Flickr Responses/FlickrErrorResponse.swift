@@ -13,3 +13,9 @@ struct FlickrErrorResponse: Codable, Error {
     let message: String
 
 }
+
+extension FlickrErrorResponse: LocalizedError {
+    var errorDescription: String? {
+        return message
+    }
+}

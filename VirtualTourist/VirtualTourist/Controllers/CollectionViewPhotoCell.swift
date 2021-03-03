@@ -11,7 +11,12 @@ import UIKit
 class CollectionViewPhotoCell: UICollectionViewCell {
     
     // MARK: - Outlet
-    @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var imageView: UIImageView!
     
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.image = nil
+    }
 }

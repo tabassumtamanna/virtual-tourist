@@ -16,7 +16,7 @@ class PhotoAlbumViewController:   UIViewController{
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var newCollectionButton: UIButton!
-   
+    @IBOutlet weak var photoActivityIndicator: UIActivityIndicatorView!
     
     // MARK: - variables
     var pin: Pin!
@@ -98,6 +98,8 @@ class PhotoAlbumViewController:   UIViewController{
     
     // MARK: - Get Flickr Photos
     func getFlickrPhotos(){
+        self.photoActivityIndicator.isHidden = false
+        self.photoActivityIndicator.startAnimating()
         FlickrClient.getPhotos(lat: pin.latitude, long: pin.longitude, completion: handleFlickrResponse(flickrPhoto:error:))
     }
     
@@ -105,9 +107,11 @@ class PhotoAlbumViewController:   UIViewController{
     func handleFlickrResponse(flickrPhoto: [FlickrPhoto], error: Error?){
         
         if error != nil {
+            showFailureMessage(title: "Flickr Image Download", message: "Not possible to get the Flickr Images")
             print(error?.localizedDescription ?? "")
         } else {
             if flickrPhoto.count == 0 {
+                self.photoActivityIndicator.stopAnimating()
                 addNoImageLabel()
                 return
             }
@@ -116,6 +120,7 @@ class PhotoAlbumViewController:   UIViewController{
             self.collectionView.reloadData()
             self.setupNewCollectionButton(true)
         }
+        self.photoActivityIndicator.stopAnimating()
     }
     
     // MARK: - Add No Image Label
@@ -144,6 +149,7 @@ class PhotoAlbumViewController:   UIViewController{
         do {
             try dataController.viewContext.save()
         } catch {
+            showFailureMessage(title: "Add Image", message: "Not possible to add Flickr Images")
             print(error.localizedDescription)
         }
     }
@@ -158,6 +164,7 @@ class PhotoAlbumViewController:   UIViewController{
         do {
             try dataController.viewContext.save()
         } catch {
+            showFailureMessage(title: "Delete Image", message: "Not possible to delete the image")
             print(error.localizedDescription)
         }
     
@@ -174,11 +181,19 @@ class PhotoAlbumViewController:   UIViewController{
                 do {
                     try self.dataController.viewContext.save()
                 } catch {
+                    showFailureMessage(title: "Delete Images", message: "Not possible to delete all the images")
                     print(error.localizedDescription)
                 }
             }
         }
         
+    }
+    
+    // MARK: -  Show Failure Message
+    func showFailureMessage(title: String, message: String) {
+        let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertVC.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alertVC, animated: true, completion: nil)
     }
     
 }
@@ -206,6 +221,7 @@ extension PhotoAlbumViewController: MKMapViewDelegate {
         return pinView
     }
     
+   
 }
 
 // MARK: - Extension : UICollectionViewDelegate, UICollectionViewDataSource
@@ -236,7 +252,8 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewPhotoCell", for: indexPath) as! CollectionViewPhotoCell
         
-        cell.imageView.image = UIImage(named: "VirtualTourist_1024")
+        //cell.imageView.image = UIImage(named: "VirtualTourist_512")
+        cell.imageView.contentMode = .scaleAspectFit
         
         if  self.fetchedResultsController.fetchedObjects!.count > 0 {
             let photo =  self.fetchedResultsController.object(at: indexPath)
@@ -246,8 +263,11 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
             }
         } else {
             
+            cell.activityIndicator.isHidden = false
+            cell.activityIndicator.startAnimating()
+            
             let photo = self.flickrPhoto[indexPath.row]
-           
+            
             FlickrClient.downloadImages(farmId: photo.farm, serverId: photo.server, id: photo.id, secret: photo.secret){ (data, error) in
             
                 guard let data = data else {
@@ -255,17 +275,17 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
                 }
                 
                 DispatchQueue.main.async {
-                    cell.activityIndicator.startAnimating()
+                    cell.activityIndicator.stopAnimating()
+                    
                     self.addPhoto(data: data)
                     
                     let image = UIImage(data: data)
                     cell.imageView?.image = image
                     
                 }
-                cell.activityIndicator.stopAnimating()
             }
-            
         }
+        
         return cell
     }
   
@@ -305,13 +325,11 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
         }
     }
     
+    
     // MARK: - Controller NSFetchedResultsController Did Change
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
-        case .insert:
-            collectionView.insertItems(at: [newIndexPath!])
-            break
         case .delete:
             collectionView.deleteItems(at: [indexPath!])
             break
