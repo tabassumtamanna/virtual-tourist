@@ -36,7 +36,7 @@ The Virtual Tourist app downloads and stores images from Flickr. The app allows 
 
 ## Installation
 
-Download and unzip ```virtual-tourist```
+Download and unzip ```VirtualTourist```
 
 ## To Do
 
