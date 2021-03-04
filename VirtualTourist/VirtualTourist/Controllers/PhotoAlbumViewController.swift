@@ -23,7 +23,7 @@ class PhotoAlbumViewController:   UIViewController{
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
     var flickrPhoto : [FlickrPhoto] = []
-    var totalPhotos: Int = 1
+    var totalPages: Int = 1
     let sectionInsets = UIEdgeInsets(top: 5.0,
         left: 5.0,
         bottom: 5.0,
@@ -101,7 +101,7 @@ class PhotoAlbumViewController:   UIViewController{
     func getFlickrPhotos(){
         self.photoActivityIndicator.isHidden = false
         self.photoActivityIndicator.startAnimating()
-        FlickrClient.getPhotos(lat: pin.latitude, long: pin.longitude, totalPhotos: totalPhotos, completion: handleFlickrResponse(flickrPhotoList:error:))
+        FlickrClient.getPhotos(lat: pin.latitude, long: pin.longitude, totalPages: totalPages, completion: handleFlickrResponse(flickrPhotoList:error:))
     }
     
     // MARK: - Handle Flickr Response
@@ -113,7 +113,7 @@ class PhotoAlbumViewController:   UIViewController{
         } else {
             
             self.flickrPhoto = flickrPhotoList!.photo
-            self.totalPhotos = Int(flickrPhotoList!.total) ?? 1
+            self.totalPages = flickrPhotoList!.pages
             
             if self.flickrPhoto.count == 0 {
                 self.photoActivityIndicator.stopAnimating()
