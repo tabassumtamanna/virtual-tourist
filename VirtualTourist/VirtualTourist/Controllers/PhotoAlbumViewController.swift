@@ -23,6 +23,7 @@ class PhotoAlbumViewController:   UIViewController{
     var dataController: DataController!
     var fetchedResultsController: NSFetchedResultsController<Photo>!
     var flickrPhoto : [FlickrPhoto] = []
+    var totalPhotos: Int = 1
     let sectionInsets = UIEdgeInsets(top: 5.0,
         left: 5.0,
         bottom: 5.0,
@@ -63,7 +64,7 @@ class PhotoAlbumViewController:   UIViewController{
     
     // MARK: - New Collection Button Tapped
     @IBAction func newCollectionButtonTapped(sender: Any) {
-        
+        self.setupNewCollectionButton(false)
         self.deleteAllPhotos()
         self.getFlickrPhotos()
     }
@@ -100,27 +101,30 @@ class PhotoAlbumViewController:   UIViewController{
     func getFlickrPhotos(){
         self.photoActivityIndicator.isHidden = false
         self.photoActivityIndicator.startAnimating()
-        FlickrClient.getPhotos(lat: pin.latitude, long: pin.longitude, completion: handleFlickrResponse(flickrPhoto:error:))
+        FlickrClient.getPhotos(lat: pin.latitude, long: pin.longitude, totalPhotos: totalPhotos, completion: handleFlickrResponse(flickrPhotoList:error:))
     }
     
     // MARK: - Handle Flickr Response
-    func handleFlickrResponse(flickrPhoto: [FlickrPhoto], error: Error?){
+    func handleFlickrResponse(flickrPhotoList: FlickrPhotos?, error: Error?){
         
         if error != nil {
             showFailureMessage(title: "Flickr Image Download", message: "Not possible to get the Flickr Images")
             print(error?.localizedDescription ?? "")
         } else {
-            if flickrPhoto.count == 0 {
+            
+            self.flickrPhoto = flickrPhotoList!.photo
+            self.totalPhotos = Int(flickrPhotoList!.total) ?? 1
+            
+            if self.flickrPhoto.count == 0 {
                 self.photoActivityIndicator.stopAnimating()
                 addNoImageLabel()
                 return
             }
-            self.flickrPhoto = flickrPhoto
-            
+            self.photoActivityIndicator.stopAnimating()
             self.collectionView.reloadData()
             self.setupNewCollectionButton(true)
         }
-        self.photoActivityIndicator.stopAnimating()
+       
     }
     
     // MARK: - Add No Image Label
@@ -175,18 +179,19 @@ class PhotoAlbumViewController:   UIViewController{
     func deleteAllPhotos () {
         if let photos = self.fetchedResultsController.fetchedObjects {
             
-            for photo in photos.reversed() {
-                self.dataController.viewContext.delete(photo)
-                
-                do {
-                    try self.dataController.viewContext.save()
-                } catch {
-                    showFailureMessage(title: "Delete Images", message: "Not possible to delete all the images")
-                    print(error.localizedDescription)
+            for photo in photos {
+                dataController.viewContext.performAndWait {
+                    self.dataController.viewContext.delete(photo)
+                   
+                    do {
+                        try self.dataController.viewContext.save()
+                    } catch {
+                        showFailureMessage(title: "Delete Images", message: "Not possible to delete all the images")
+                        print(error.localizedDescription)
+                    }
                 }
             }
         }
-        
     }
     
     // MARK: -  Show Failure Message
@@ -327,11 +332,12 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
     
     // MARK: - Controller NSFetchedResultsController Did Change
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+   func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         
         switch type {
+        
         case .delete:
-            collectionView.deleteItems(at: [indexPath!])
+            self.collectionView.deleteItems(at: [indexPath!])
             break
         
         default:
